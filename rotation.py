@@ -44,7 +44,7 @@ class Rotation(object):
             if input.shape == (3,):
                 if Rotation.verbose:
                     print('input are euler angles')
-                func = tu.kuka_to_trafo_deg if useDegrees else tu.kuka_to_trafo_rad
+                func = kuka_to_trafo_deg if useDegrees else kuka_to_trafo_rad
                 self.__rotation_matrix = np.array(func(0, 0, 0, input[0], input[1], input[2])[:3, :3])
                 func = np.deg2rad if useDegrees else lambda x: x
                 self.__euler = func(input)
@@ -52,14 +52,14 @@ class Rotation(object):
         elif type(input) is tuple:
             if Rotation.verbose:
                 print('input is axis-angle')
-            self.__rotation_matrix = np.array(tu.axis_angle_to_rotation_matrix(np.matrix(input[0]), input[
+            self.__rotation_matrix = np.array(axis_angle_to_rotation_matrix(np.matrix(input[0]), input[
                 1] if not useDegrees else np.deg2rad(input[1])))
             self.__axis_angle = (input[0], input[1] if not useDegrees else np.deg2rad(input[1]))
             return
         elif type(input) is Quaternion:
             if Rotation.verbose:
                 print('input is Quaternion')
-            self.__rotation_matrix = tu.axis_angle_to_rotation_matrix(input.get_axis(), input.get_angle())
+            self.__rotation_matrix = axis_angle_to_rotation_matrix(input.get_axis(), input.get_angle())
             self.__quaternion = input
             return
 
