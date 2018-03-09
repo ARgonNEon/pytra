@@ -23,6 +23,14 @@ class Transformation(Rotation, Translation):
     def of_xyzABC_deg(x, y, z, A, B, C):
         return Transformation(np.array([x, y, z, A, B, C], dtype=float), True)
 
+    @staticmethod
+    def of_3_by_4_matrix(r11, r12, r13, x, r21, r22, r23, y, r31, r32, r33, z):
+        matrix = np.array([[r11, r12, r13, x],
+                           [r21, r22, r23, y],
+                           [r31, r32, r33, z],
+                           [0, 0, 0, 1]])
+        return Transformation(matrix)
+
     def __init__(self, input=None, useDegrees=False):
         if input is None:
             Rotation.__init__(self)
