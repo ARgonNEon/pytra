@@ -1,10 +1,7 @@
 # /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
 from .trafo_utils import *
-from .add_pythonconvention_method import *
-from .deprecated import *
 
 
 class Quaternion(object):
@@ -67,175 +64,120 @@ class Quaternion(object):
     # EndFactory
 
     def __init__(self, a, b, c, d, normalize=True):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.d = d
+        self.q1 = a
+        self.q2 = b
+        self.q3 = c
+        self.q4 = d
         if normalize:
             self.normalize()
 
     def normalize(self):
-        length = self.getLength()
-        self.a /= length
-        self.b /= length
-        self.c /= length
-        self.d /= length
+        length = self.length
+        self.q1 /= length
+        self.q2 /= length
+        self.q3 /= length
+        self.q4 /= length
 
         if self.a < 0:
-            self.a *= -1.0
-            self.b *= -1.0
-            self.c *= -1.0
-            self.d *= -1.0
+            self.q1 *= -1.0
+            self.q2 *= -1.0
+            self.q3 *= -1.0
+            self.q4 *= -1.0
         return self
 
-    @deprecated
-    def getLength(self):
+    @property
+    def length(self):
         return np.sqrt(self.a ** 2 + self.b ** 2 + self.c ** 2 + self.d ** 2)
 
-    @add_pythonconvention_method(getLength)
-    def get_length(self):
-        pass
+    @property
+    def a(self):
+        return self.q1
 
-    @deprecated
-    def getA(self):
+    @property
+    def b(self):
+        return self.q2
+
+    @property
+    def c(self):
+        return self.q3
+
+    @property
+    def d(self):
+        return self.q4
+
+    @property
+    def scalar(self):
         return self.a
 
-    @add_pythonconvention_method(getA)
-    def get_a(self):
-        pass
+    @property
+    def real(self):
+        return self.a
 
-    @deprecated
-    def getB(self):
-        return self.b
-
-    @add_pythonconvention_method(getB)
-    def get_b(self):
-        pass
-
-    @deprecated
-    def getC(self):
-        return self.c
-
-    @add_pythonconvention_method(getC)
-    def get_c(self):
-        pass
-
-    @deprecated
-    def getD(self):
-        return self.d
-
-    @add_pythonconvention_method(getD)
-    def get_d(self):
-        pass
-
-    @deprecated
-    def getScalar(self):
-        return self.getA()
-
-    @add_pythonconvention_method(getScalar)
-    def get_scalar(self):
-        pass
-
-    @deprecated
-    def getReal(self):
-        return self.getA()
-
-    @add_pythonconvention_method(getReal)
-    def get_real(self):
-        pass
-
-    @deprecated
-    def getVector(self):
+    @property
+    def vector(self):
         return np.array([self.b, self.c, self.d])
 
-    @add_pythonconvention_method(getVector)
-    def get_vector(self):
-        pass
+    @property
+    def imag(self):
+        return self.vector
 
-    @deprecated
-    def getImag(self):
-        return self.getVector()
+    @property
+    def angle(self):
+        return 2 * np.arccos(self.a)
 
-    @add_pythonconvention_method(getImag)
-    def get_imag(self):
-        pass
-
-    @deprecated
-    def getAngle(self):
-        return 2 * np.arccos(self.getA())
-
-    @add_pythonconvention_method(getAngle)
-    def get_angle(self):
-        pass
-
-    @deprecated
-    def getAxis(self):
-        if self.get_angle() == 0.0:
+    @property
+    def axis(self):
+        if self.angle == 0.0:
             return np.matrix([[1], [0], [0]])
-        return 1 / (np.sin(self.get_angle() / 2)) * np.matrix([[self.get_b()], [self.get_c()], [self.get_d()]])
+        return 1 / (np.sin(self.angle / 2)) * np.matrix([[self.b], [self.c], [self.d]])
 
-    @add_pythonconvention_method(getAxis)
-    def get_axis(self):
-        pass
-
-    @deprecated
-    def toNumpyArray(self):
+    @property
+    def numpy_array(self):
         return np.array([self.a, self.b, self.c, self.d])
 
-    @add_pythonconvention_method(toNumpyArray)
-    def to_numpy_array(self):
-        pass
-
     def add(self, quat):
-        a = self.a + quat.get_a()
-        b = self.b + quat.get_b()
-        c = self.c + quat.get_c()
-        d = self.d + quat.get_d()
+        a = self.a + quat.a
+        b = self.b + quat.b
+        c = self.c + quat.c
+        d = self.d + quat.d
         return Quaternion(a, b, c, d, False)
 
     def sub(self, quat):
-        a = self.a - quat.get_a()
-        b = self.b - quat.get_b()
-        c = self.c - quat.get_c()
-        d = self.d - quat.get_d()
+        a = self.a - quat.a
+        b = self.b - quat.b
+        c = self.c - quat.c
+        d = self.d - quat.d
         return Quaternion(a, b, c, d, False)
 
     def dot(self, quat):
-        return self.a * quat.get_a() + self.b * quat.get_b() + self.c * quat.get_c() + self.d * quat.get_d()
+        return self.a * quat.a \
+             + self.b * quat.b \
+             + self.c * quat.c \
+             + self.d * quat.d
 
     def outer(self, quat):
         a = np.array([self.a, self.b, self.c, self.d])
-        b = np.array([quat.get_a(), quat.get_b(), quat.get_c(), quat.get_d()])
+        b = np.array([quat.a, quat.b, quat.c, quat.d])
         return np.outer(a, b)
 
     def mul(self, quat, normalize=True):
-        a = self.a * quat.get_a() - self.b * quat.get_b() - self.c * quat.get_c() - self.d * quat.get_d()
-        b = self.a * quat.get_b() + self.b * quat.get_a() + self.c * quat.get_d() - self.d * quat.get_c()
-        c = self.a * quat.get_c() - self.b * quat.get_d() + self.c * quat.get_a() + self.d * quat.get_b()
-        d = self.a * quat.get_d() + self.b * quat.get_c() - self.c * quat.get_b() + self.d * quat.get_a()
+        a = self.a * quat.a - self.b * quat.b - self.c * quat.c - self.d * quat.d
+        b = self.a * quat.b + self.b * quat.a + self.c * quat.d - self.d * quat.c
+        c = self.a * quat.c - self.b * quat.d + self.c * quat.a + self.d * quat.b
+        d = self.a * quat.d + self.b * quat.c - self.c * quat.b + self.d * quat.a
         return Quaternion(a, b, c, d, normalize)
 
     def conjugate(self):
         return Quaternion(self.a, -self.b, -self.c, -self.d)
 
-    @deprecated
-    def getAngleToOther(self, other):
-        a = self.get_axis()
-        b = other.get_axis()
+    def get_angle_to(self, other):
+        a = self.axis
+        b = other.axis
         cosa = (a.T.dot(b)) / (np.linalg.norm(a) * np.linalg.norm(b))
         return np.arccos(cosa)
 
-    @add_pythonconvention_method(getAngleToOther)
-    def get_angle_to_other(self):
-        pass
-
-    @deprecated
-    def getErrorQuaternion(self, meanquat):
+    def get_error_quaternion(self, meanquat):
         return self.conjugate() * meanquat
-
-    @add_pythonconvention_method(getErrorQuaternion)
-    def get_error_quaternion(self):
-        pass
 
     def __add__(self, other):
         return self.add(other)

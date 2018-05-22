@@ -4,8 +4,6 @@
 import numpy as np
 from scipy import linalg as la
 
-from .add_pythonconvention_method import *
-from .deprecated import *
 from .rotation import Rotation
 from .translation import Translation
 
@@ -55,62 +53,49 @@ class Transformation(Rotation, Translation):
 
         raise TypeError('Transformation representation not understood')
 
-    @deprecated
-    def getEulerArray(self, useDegrees=False):
-        trans = self.get_translation_vector()
+    @property
+    def xyzABC_deg(self):
+        return self.get_xyzABC(True)
+
+    @property
+    def xyzABC_rad(self):
+        return self.get_xyzABC(False)
+
+    def get_xyzABC(self, useDegrees=False):
+        trans = self.translation_vector
         rot = self.get_euler_angles(useDegrees=useDegrees)
         return np.array([trans[0], trans[1], trans[2], rot[0], rot[1], rot[2]])
 
-    @add_pythonconvention_method(getEulerArray)
-    def get_euler_array(self):
-        pass
-
     def __getitem__(self, index):
-        return self.get_euler_array()[index]
+        return self.xyzABC_rad[index]
 
-    @deprecated
-    def getTransformationMatrix(self):
-        res = np.hstack([self.get_rotation_matrix(), self.get_translation_vector().reshape(3, 1)])
+    @property
+    def transformation_matrix(self):
+        res = np.hstack([self.rotation_matrix, self.translation_vector.reshape(3, 1)])
         return np.vstack([res, np.array([0, 0, 0, 1])])
 
-    @add_pythonconvention_method(getTransformationMatrix)
-    def get_transformation_matrix(self):
-        pass
+    @property
+    def rotation(self):
+        return Rotation(self.rotation_matrix)
 
-    @add_pythonconvention_method(getTransformationMatrix)
-    def get_matrix(self):
-        pass
-
-    @deprecated
-    def getRotation(self):
-        return Rotation(self.get_rotation_matrix())
-
-    @add_pythonconvention_method(getRotation)
-    def get_rotation(self):
-        pass
-
-    @deprecated
-    def getTranslation(self):
-        return Translation(self.get_translation_vector())
-
-    @add_pythonconvention_method(getTranslation)
-    def get_translation(self):
-        pass
+    @property
+    def translation(self):
+        return Translation(self.translation_vector)
 
     def transform(self, other):
         assert type(other) is Transformation
-        return Transformation(self.get_transformation_matrix().dot(other.get_transformation_matrix()))
+        return Transformation(self.transformation_matrix.dot(other.get_transformation_matrix()))
 
     def invert(self):
-        hom = self.get_transformation_matrix()
+        hom = self.transformation_matrix
         return Transformation(la.inv(hom))
 
     def d(self, other):
-        return self.get_rotation().d_geod(other.get_rotation()) + self.get_translation().d_transl(
+        return self.rotation.d_geod(other.rotation) + self.translation.d_transl(
             other.get_translation())
 
     def __repr__(self):
-        return str(self.get_transformation_matrix())
+        return str(self.transformation_matrix)
 
     def __str__(self):
         return self.__repr__()
@@ -121,16 +106,11 @@ class Transformation(Rotation, Translation):
     def __imul__(self, other):
         return self.__mul__(other)
 
-    @deprecated
-    def toLnString(self, useDegrees=False):
+    def to_ln_string(self, useDegrees=False):
         s = ''
-        for dof in self.get_euler_array(useDegrees):
+        for dof in self.get_xyzABC(useDegrees):
             s += str(dof) + ' '
         return s[:-1]
-
-    @add_pythonconvention_method(toLnString)
-    def to_ln_string(self):
-        pass
 
     def to_pretty_string(self):
         s = ''
@@ -138,7 +118,7 @@ class Transformation(Rotation, Translation):
         def f(n):
             return '{:.3f}'.format(n)
 
-        mat = self.get_transformation_matrix()
+        mat = self.transformation_matrix
         for line in mat:
             for col in line:
                 s += f(col) + '\t'
