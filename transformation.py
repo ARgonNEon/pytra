@@ -84,7 +84,7 @@ class Transformation(Rotation, Translation):
 
     def transform(self, other):
         assert type(other) is Transformation
-        return Transformation(self.transformation_matrix.dot(other.get_transformation_matrix()))
+        return Transformation(self.transformation_matrix.dot(other.transformation_matrix))
 
     def invert(self):
         hom = self.transformation_matrix
